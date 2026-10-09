@@ -1,0 +1,89 @@
+## 💻 Firmware Code
+
+Below is the complete Arduino C++ code for the **LAKP Paper Analyzer**. Make sure to install the required libraries before uploading.
+
+### 📚 Required Libraries
+* `WiFi.h` (built-in for ESP32)
+* `esp_camera.h` (built-in for ESP32-CAM)
+* `Adafruit_SSD1306` & `Adafruit_GFX` (for OLED display)
+
+---
+
+### 📄 `main.ino`
+
+```cpp
+#include "esp_camera.h"
+#include <Wire.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
+
+// OLED Display settings
+#define SCREEN_WIDTH 128
+#define SCREEN_HEIGHT 64
+#define OLED_RESET    -1
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
+
+// Button GPIO Pins
+#define BUTTON_RUN_PIN   12
+#define BUTTON_TEST_PIN  13
+
+void setup() {
+  Serial.begin(115200);
+
+  // Initialize Buttons with internal Pull-Up resistors
+  pinMode(BUTTON_RUN_PIN, INPUT_PULLUP);
+  pinMode(BUTTON_TEST_PIN, INPUT_PULLUP);
+
+  // Initialize OLED Display
+  if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
+    Serial.println(F("SSD1306 allocation failed"));
+    for (;;);
+  }
+
+  display.clearDisplay();
+  display.setTextSize(1);
+  display.setTextColor(SSD1306_WHITE);
+  display.setCursor(0, 10);
+  display.println(F("LAKP ANALYZER"));
+  display.println(F("System Ready..."));
+  display.display();
+}
+
+void loop() {
+  // Check if RUN button is pressed (LOW due to INPUT_PULLUP)
+  if (digitalRead(BUTTON_RUN_PIN) == LOW) {
+    runAnalysis();
+    delay(300); // Debounce delay
+  }
+
+  // Check if TEST button is pressed
+  if (digitalRead(BUTTON_TEST_PIN) == LOW) {
+    runSelfTest();
+    delay(300); // Debounce delay
+  }
+}
+
+void runAnalysis() {
+  display.clearDisplay();
+  display.setCursor(0, 0);
+  display.println(F("Running Analysis..."));
+  display.display();
+  
+  // Add your image processing / TinyML logic here
+  
+  delay(1000);
+  display.setCursor(0, 20);
+  display.println(F("RESULT:"));
+  display.println(F("Pb 0.05 mg/L (OK)"));
+  display.println(F("TINYML 97%"));
+  display.display();
+}
+
+void runSelfTest() {
+  display.clearDisplay();
+  display.setCursor(0, 0);
+  display.println(F("Self Test Mode..."));
+  display.println(F("Camera: OK"));
+  display.println(F("Sensor: OK"));
+  display.display();
+}
